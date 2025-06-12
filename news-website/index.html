@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" data-font-size="medium" data-layout="list">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球新闻 - Global News</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 顶部导航栏 -->
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1>{{ lang.logoText }}</h1>
+                </div>
+                <nav class="main-nav">
+                    <ul>
+                        <li v-for="(item, index) in navItems" :key="index" 
+                            :class="{ active: activeNav === index }"
+                            @click="changeCategory(index)">
+                            {{ item.text }}
+                        </li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                <button class="lang-switch" @click="toggleLanguage">
+                  {{ currentLanguage === 'zh' ? 'EN' : '中文' }}
+                </button>
+                <button class="settings-btn" @click="toggleSettings">
+                <i class="fas fa-cog"></i>
+                </button>
+                <div class="user-dropdown" v-if="isLoggedIn">
+                <button class="user-btn" @click.stop="toggleDropdown">
+                <i class="fas fa-user-circle"></i> {{ user.username }}
+                <i class="fas fa-caret-down"></i>
+                </button>
+                <div class="dropdown-menu" v-show="showDropdown" @click.stop>
+                <a href="#" @click.prevent="logout">
+                <i class="fas fa-sign-out-alt"></i> {{ lang.logout }}
+                </a>
+              <a href="profile.html" @click.prevent="goToProfile">
+        <i class="fas fa-user"></i> {{ lang.profile }}
+      </a>
+    </div>
+  </div>
+  <button v-else class="login-btn" @click="toggleLoginModal">
+    <i class="fas fa-sign-in-alt"></i> {{ lang.login }}
+  </button>
+</div>
+        </header>
+
+        <!-- 登录模态框 -->
+        <div class="modal-overlay" :class="{ active: showLoginModal }" @click.self="toggleLoginModal">
+            <div class="login-modal">
+                <div class="modal-header">
+                    <h3>{{ lang.login }}</h3>
+                    <button class="close-btn" @click="toggleLoginModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>{{ lang.username }}</label>
+                        <input type="text" v-model="loginForm.username" :placeholder="lang.usernamePlaceholder">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ lang.password }}</label>
+                        <input type="password" v-model="loginForm.password" :placeholder="lang.passwordPlaceholder">
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" @click="handleLogin">
+                            {{ lang.login }}
+                        </button>
+                        <button class="btn btn-secondary" @click="toggleRegisterModal">
+                            {{ lang.register }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 注册模态框 -->
+        <div class="modal-overlay" :class="{ active: showRegisterModal }" @click.self="toggleRegisterModal">
+            <div class="register-modal">
+                <div class="modal-header">
+                    <h3>{{ lang.register }}</h3>
+                    <button class="close-btn" @click="toggleRegisterModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>{{ lang.username }}</label>
+                        <input type="text" v-model="registerForm.username" :placeholder="lang.usernamePlaceholder">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ lang.email }}</label>
+                        <input type="email" v-model="registerForm.email" :placeholder="lang.emailPlaceholder">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ lang.password }}</label>
+                        <input type="password" v-model="registerForm.password" :placeholder="lang.passwordPlaceholder">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ lang.confirmPassword }}</label>
+                        <input type="password" v-model="registerForm.confirmPassword" :placeholder="lang.confirmPasswordPlaceholder">
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" @click="handleRegister">
+                            {{ lang.register }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设置面板 -->
+        <div class="settings-panel" :class="{ active: showSettings }">
+            <div class="settings-header">
+                <h3>{{ lang.settingsTitle }}</h3>
+                <button class="close-btn" @click="toggleSettings">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="settings-content">
+                <div class="setting-item">
+                    <label>{{ lang.themeSetting }}</label>
+                    <select v-model="selectedTheme" @change="changeTheme">
+                        <option value="light">{{ lang.lightTheme }}</option>
+                        <option value="dark">{{ lang.darkTheme }}</option>
+                        <option value="blue">{{ lang.blueTheme }}</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>{{ lang.fontSizeSetting }}</label>
+                    <select v-model="selectedFontSize" @change="changeFontSize">
+                        <option value="small">{{ lang.smallFont }}</option>
+                        <option value="medium">{{ lang.mediumFont }}</option>
+                        <option value="large">{{ lang.largeFont }}</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>{{ lang.layoutSetting }}</label>
+                    <select v-model="selectedLayout" @change="changeLayout">
+                        <option value="list">{{ lang.listLayout }}</option>
+                        <option value="grid">{{ lang.gridLayout }}</option>
+                        <option value="card">{{ lang.cardLayout }}</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" v-model="autoRefresh" @change="toggleAutoRefresh">
+                        {{ lang.autoRefresh }}
+                    </label>
+                </div>
+                <div class="setting-item" v-if="autoRefresh">
+                    <label>{{ lang.refreshInterval }}</label>
+                    <input type="number" v-model.number="refreshInterval" min="1" max="60">
+                    <span>{{ lang.minutes }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要内容区 -->
+        <main class="main-content">
+            <div class="container">
+                <!-- 加载状态 -->
+                <div v-if="loading" class="loading-indicator">
+                    <i class="fas fa-spinner fa-spin"></i> {{ lang.loading }}
+                </div>
+                
+                <!-- 错误信息 -->
+                <div v-if="error" class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                </div>
+
+                <!-- 搜索框 -->
+                <div class="search-box">
+                    <input type="text" v-model="searchQuery" :placeholder="lang.searchPlaceholder" 
+                           @keyup.enter="searchNews">
+                    <button @click="searchNews">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <!-- 新闻分类标签 -->
+                <div class="news-tags">
+                    <span v-for="(tag, index) in tags" :key="index" 
+                          :class="{ active: activeTag === index }"
+                          @click="filterByTag(index)">
+                        {{ tag }}
+                    </span>
+                </div>
+
+                <!-- 新闻列表 -->
+                <div class="news-container" :class="selectedLayout">
+                    <div class="news-item" v-for="(news, index) in paginatedNews" :key="news.id || index">
+                        <div class="news-image">
+                            <img :src="news.image" :alt="news.title" @click="goToDetail(news.id)">
+                            <span class="news-category">{{ getCategoryName(news.category) }}</span>
+                            <span class="news-hot" v-if="news.tags && news.tags.includes('hot')">
+                                <i class="fas fa-fire"></i> {{ lang.hot }}
+                            </span>
+                        </div>
+                        <div class="news-content">
+                            <h3 class="news-title" @click="goToDetail(news.id)">{{ news.title }}</h3>
+                            <p class="news-desc">{{ news.description }}</p>
+                            <div class="news-meta">
+                                <span class="news-date">
+                                    <i class="far fa-clock"></i> {{ formatDate(news.date) }}
+                                </span>
+                                <span class="news-source">
+                                    <i class="far fa-newspaper"></i> {{ news.source }}
+                                </span>
+                                <span class="news-comments">
+                                    <i class="far fa-comment"></i> {{ news.comments || 0 }}
+                                </span>
+                                <span class="news-views">
+                                    <i class="far fa-eye"></i> {{ news.views || 0 }}
+                                </span>
+                            </div>
+                            <div class="news-actions">
+                                <button class="btn-like" @click="toggleLike(news.id)" 
+                                        :class="{ liked: isLiked(news.id) }">
+                                    <i class="far fa-heart"></i> {{ news.likes || 0 }}
+                                </button>
+                                <a :href="'news-detail.html?id=' + news.id" class="read-more">
+                                    {{ lang.readMore }} <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分页控制 -->
+                <div class="pagination" v-if="totalPages > 1">
+                    <button @click="prevPage" :disabled="currentPage === 1">
+                        <i class="fas fa-chevron-left"></i> {{ lang.previous }}
+                    </button>
+                    <template v-for="page in visiblePages" :key="page">
+                        <span v-if="page === '...'" class="ellipsis">...</span>
+                        <span v-else 
+                              :class="{ active: currentPage === page }"
+                              @click="goToPage(page)">
+                            {{ page }}
+                        </span>
+                    </template>
+                    <button @click="nextPage" :disabled="currentPage === totalPages">
+                        {{ lang.next }} <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h4>{{ lang.aboutUs }}</h4>
+                        <p>{{ lang.aboutText }}</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>{{ lang.quickLinks }}</h4>
+                        <ul>
+                            <li><a href="index.html">{{ lang.home }}</a></li>
+                            <li><a href="index.html">{{ lang.news }}</a></li>
+                            <li><a href="#">{{ lang.contact }}</a></li>
+                            <li><a href="#">{{ lang.privacy }}</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>{{ lang.contactUs }}</h4>
+                        <p><i class="fas fa-envelope"></i> info@globalnews.com</p>
+                        <p><i class="fas fa-phone"></i> +1 234 567 890</p>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; {{ currentYear }} Global News. {{ lang.allRightsReserved }}</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/vue@3.2.31/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <script src="js/lang.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

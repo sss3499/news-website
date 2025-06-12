@@ -1,0 +1,68 @@
+[
+    {
+        "id": 1,
+        "title": "国家主席发表重要讲话强调经济发展",
+        "description": "国家主席在近日的重要会议上发表讲话，强调要坚持稳中求进工作总基调，推动经济高质量发展。",
+        "category": "domestic",
+        "date": "2023-05-15T10:00:00Z",
+        "source": "新华社",
+        "image": "https://picsum.photos/600/400?random=101",
+        "url": "#",
+        "tags": ["latest", "hot", "politics", "economy"]
+    },
+    {
+        "id": 2,
+        "title": "科技创新助力产业升级",
+        "description": "最新数据显示，我国在人工智能、5G等领域的创新成果显著，为产业升级提供了强大动力。",
+        "category": "technology",
+        "date": "2023-05-14T14:30:00Z",
+        "source": "人民日报",
+        "image": "https://picsum.photos/600/400?random=102",
+        "url": "#",
+        "tags": ["latest", "economy"]
+    },
+    {
+        "id": 3,
+        "title": "国际社会高度评价中国外交政策",
+        "description": "多位国际专家表示，中国的外交政策为世界和平与发展作出了重要贡献。",
+        "category": "international",
+        "date": "2023-05-13T09:15:00Z",
+        "source": "央视新闻",
+        "image": "https://picsum.photos/600/400?random=103",
+        "url": "#",
+        "tags": ["politics"]
+    },
+    {
+        "id": 4,
+        "title": "全国足球联赛精彩对决",
+        "description": "在昨晚进行的全国足球联赛中，两支劲旅上演了精彩对决，最终以2:2握手言和。",
+        "category": "sports",
+        "date": "2023-05-12T20:45:00Z",
+        "source": "新浪体育",
+        "image": "https://picsum.photos/600/400?random=104",
+        "url": "#",
+        "tags": ["hot"]
+    },
+    {
+        "id": 5,
+        "title": "新电影《时代之光》首映获好评",
+        "description": "由著名导演执导的新片《时代之光》昨日首映，观众和影评人一致给予高度评价。",
+        "category": "entertainment",
+        "date": "2023-05-11T18:00:00Z",
+        "source": "腾讯娱乐",
+        "image": "https://picsum.photos/600/400?random=105",
+        "url": "#",
+        "tags": ["latest"]
+    },
+    {
+        "id": 6,
+        "title": "健康生活方式讲座受欢迎",
+        "description": "市卫生健康委员会举办的健康生活方式系列讲座受到市民热烈欢迎，场场爆满。",
+        "category": "domestic",
+        "date": "2023-05-10T15:20:00Z",
+        "source": "地方日报",
+        "image": "https://picsum.photos/600/400?random=106",
+        "url": "#",
+        "tags": ["health"]
+    }
+]

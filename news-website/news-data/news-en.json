@@ -1,0 +1,68 @@
+[
+    {
+        "id": 1,
+        "title": "President delivers important speech on economic development",
+        "description": "The President emphasized the need to maintain stability while pursuing progress and promote high-quality economic development at a recent important meeting.",
+        "category": "domestic",
+        "date": "2023-05-15T10:00:00Z",
+        "source": "Xinhua",
+        "image": "https://picsum.photos/600/400?random=201",
+        "url": "#",
+        "tags": ["latest", "hot", "politics", "economy"]
+    },
+    {
+        "id": 2,
+        "title": "Technological innovation drives industrial upgrade",
+        "description": "Latest data shows significant achievements in fields like AI and 5G, providing strong momentum for industrial upgrading.",
+        "category": "technology",
+        "date": "2023-05-14T14:30:00Z",
+        "source": "People's Daily",
+        "image": "https://picsum.photos/600/400?random=202",
+        "url": "#",
+        "tags": ["latest", "economy"]
+    },
+    {
+        "id": 3,
+        "title": "International community praises China's foreign policy",
+        "description": "Many international experts say China's foreign policy has made important contributions to world peace and development.",
+        "category": "international",
+        "date": "2023-05-13T09:15:00Z",
+        "source": "CCTV",
+        "image": "https://picsum.photos/600/400?random=203",
+        "url": "#",
+        "tags": ["politics"]
+    },
+    {
+        "id": 4,
+        "title": "Exciting match in national football league",
+        "description": "Two strong teams played an exciting match in the national football league last night, ending in a 2:2 draw.",
+        "category": "sports",
+        "date": "2023-05-12T20:45:00Z",
+        "source": "Sina Sports",
+        "image": "https://picsum.photos/600/400?random=204",
+        "url": "#",
+        "tags": ["hot"]
+    },
+    {
+        "id": 5,
+        "title": "New film 'Light of the Era' receives acclaim at premiere",
+        "description": "The new film 'Light of the Era' directed by a famous director premiered yesterday and received high praise from audiences and critics alike.",
+        "category": "entertainment",
+        "date": "2023-05-11T18:00:00Z",
+        "source": "Tencent Entertainment",
+        "image": "https://picsum.photos/600/400?random=205",
+        "url": "#",
+        "tags": ["latest"]
+    },
+    {
+        "id": 6,
+        "title": "Healthy lifestyle lectures well received",
+        "description": "A series of lectures on healthy lifestyles organized by the Municipal Health Commission has been warmly welcomed by citizens, with every session fully booked.",
+        "category": "domestic",
+        "date": "2023-05-10T15:20:00Z",
+        "source": "Local Daily",
+        "image": "https://picsum.photos/600/400?random=206",
+        "url": "#",
+        "tags": ["health"]
+    }
+]

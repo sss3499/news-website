@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>用户登录 - Global News</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- 头部导航 -->
+    <header class="header">
+      <div class="container">
+        <div class="logo"><h1>{{ lang.logoText }}</h1></div>
+        <nav class="main-nav">
+          <ul>
+            <li><a href="index.html">{{ lang.home }}</a></li>
+            <li v-if="isLoggedIn">
+              <a href="#" @click="logout">{{ lang.logout }}</a>
+            </li>
+            <li v-else>
+              <a href="#" @click="toggleLoginModal">{{ lang.login }}</a>
+            </li>
+            <li v-if="!isLoggedIn">
+              <a href="#" @click="toggleRegisterModal">{{ lang.register }}</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <!-- 登录模态框 -->
+    <div class="modal-overlay" :class="{ active: showLoginModal }" @click.self="toggleLoginModal">
+        <div class="login-modal">
+            <div class="modal-header">
+                <h3>{{ lang.login }}</h3>
+                <button class="close-btn" @click="toggleLoginModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>{{ lang.username }}</label>
+                    <input type="text" v-model="loginForm.username" :placeholder="lang.usernamePlaceholder">
+                </div>
+                <div class="form-group">
+                    <label>{{ lang.password }}</label>
+                    <input type="password" v-model="loginForm.password" :placeholder="lang.passwordPlaceholder">
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" @click="handleLogin">
+                        {{ lang.login }}
+                    </button>
+                    <button class="btn btn-secondary" @click="toggleRegisterModal">
+                        {{ lang.register }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 注册模态框 -->
+    <div class="modal-overlay" :class="{ active: showRegisterModal }" @click.self="toggleRegisterModal">
+        <div class="register-modal">
+            <div class="modal-header">
+                <h3>{{ lang.register }}</h3>
+                <button class="close-btn" @click="toggleRegisterModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>{{ lang.username }}</label>
+                    <input type="text" v-model="registerForm.username" :placeholder="lang.usernamePlaceholder">
+                    <div class="error-message" v-if="registerErrors.username">{{ registerErrors.username }}</div>
+                </div>
+                <div class="form-group">
+                    <label>{{ lang.email }}</label>
+                    <input type="email" v-model="registerForm.email" :placeholder="lang.emailPlaceholder">
+                    <div class="error-message" v-if="registerErrors.email">{{ registerErrors.email }}</div>
+                </div>
+                <div class="form-group">
+                    <label>{{ lang.password }}</label>
+                    <input type="password" v-model="registerForm.password" :placeholder="lang.passwordPlaceholder">
+                    <div class="error-message" v-if="registerErrors.password">{{ registerErrors.password }}</div>
+                </div>
+                <div class="form-group">
+                    <label>{{ lang.confirmPassword }}</label>
+                    <input type="password" v-model="registerForm.confirmPassword" :placeholder="lang.confirmPasswordPlaceholder">
+                    <div class="error-message" v-if="registerErrors.confirmPassword">{{ registerErrors.confirmPassword }}</div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" @click="handleRegister">
+                        {{ lang.register }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主体内容 -->
+    <main class="main-content">
+      <div class="container">
+        <h2 v-if="isLoggedIn">{{ lang.welcome }} {{ user.username }}</h2>
+        <p v-if="!isLoggedIn">{{ lang.pleaseLogin }}</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/vue@3.2.31/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+  <script src="js/lang.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
