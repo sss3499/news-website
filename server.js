@@ -12,7 +12,7 @@ const SECRET_KEY = config.server.secretKey;
 const SALT_ROUNDS = config.server.saltRounds;
 
 let pool = mysql.createPool({
-  host: 'localhost',
+  host: '192.168.100.36',
   user: 'root',
   password: '123456',
   database: 'news_db',
