@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="light" data-font-size="medium">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>新闻详情 - Global News</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="./css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://unpkg.com/vue@3.2.31/dist/vue.global.prod.js"></script>
 </head>
@@ -17,232 +16,90 @@
                 <div class="logo">
                     <h1>{{ lang.logoText }}</h1>
                 </div>
-                <nav class="main-nav">
-                    <ul>
-                        <li v-for="(item, index) in navItems" :key="index" 
-                            :class="{ active: activeNav === index }"
-                            @click="changeCategory(index)">
-                            {{ item.text }}
-                        </li>
-                    </ul>
-                </nav>
                 <div class="header-actions">
                     <button class="lang-switch" @click="toggleLanguage">
                         {{ currentLanguage === 'zh' ? 'EN' : '中文' }}
                     </button>
-                    <button class="settings-btn" @click="toggleSettings">
-                        <i class="fas fa-cog"></i>
-                    </button>
-                    <button class="login-btn" @click="toggleLoginModal" :class="{ logged: isLoggedIn }">
-                        <i class="fas" :class="isLoggedIn ? 'fa-user' : 'fa-sign-in-alt'"></i>
-                        {{ isLoggedIn ? user.username : lang.login }}
-                    </button>
-                    <button class="logout-btn" v-if="isLoggedIn" @click="handleLogout">
-                        <i class="fas fa-sign-out-alt"></i> {{ lang.logout }}
+                    <span v-if="isLoggedIn" class="user-info">{{ user.username }}</span>
+                    <button v-else class="login-btn" @click="toggleLoginModal">
+                        <i class="fas fa-sign-in-alt"></i> {{ lang.login }}
                     </button>
                 </div>
             </div>
         </header>
 
-        <!-- 主要内容区 -->
-        <main class="main-content">
-            <div class="container">
-                <div class="news-detail-container">
-                    <!-- 返回按钮 -->
-                    <div class="back-button">
-                        <button @click="goBack">
-                            <i class="fas fa-arrow-left"></i> {{ lang.backToList }}
-                        </button>
-                    </div>
-                    
-                    <!-- 新闻详情 -->
-                    <article class="news-detail">
-                        <div class="news-header">
-                            <h1 class="news-title">{{ news.title }}</h1>
-                            <div class="news-meta">
-                                <span class="news-category">{{ getCategoryName(news.category) }}</span>
-                                <span class="news-date">
-                                    <i class="far fa-clock"></i> {{ formatDate(news.date) }}
-                                </span>
-                                <span class="news-source">
-                                    <i class="far fa-newspaper"></i> {{ news.source }}
-                                </span>
-                                <span class="news-views">
-                                    <i class="far fa-eye"></i> {{ news.views || 0 }}
-                                </span>
-                                <span class="news-hot" v-if="news.tags.includes('hot')">
-                                    <i class="fas fa-fire"></i> {{ lang.hot }}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <div class="news-image">
-                            <img :src="news.image" :alt="news.title">
-                        </div>
-                        
-                        <div class="news-content" v-html="news.content"></div>
-                        
-                        <div class="news-footer">
-                            <div class="news-tags">
-                                <span v-for="(tag, index) in news.tags" :key="index">
-                                    {{ getTagName(tag) }}
-                                </span>
-                            </div>
-                            
-                            <div class="news-actions">
-                                <button class="btn-like" @click="toggleLike(news.id)" 
-                                        :class="{ liked: isLiked(news.id) }">
-                                    <i class="far fa-heart"></i> 
-                                    {{ news.likes || 0 }} {{ lang.likes }}
-                                </button>
-                                <button class="btn-share" @click="shareNews">
-                                    <i class="fas fa-share-alt"></i> {{ lang.share }}
-                                </button>
-                            </div>
-                        </div>
-                    </article>
-                    
-                    <!-- 相关新闻 -->
-                    <div class="related-news" v-if="relatedNews.length > 0">
-                        <h3 class="section-title">{{ lang.relatedNews }}</h3>
-                        <div class="related-news-list">
-                            <div class="related-item" v-for="(item, index) in relatedNews" :key="index" 
-                                 @click="goToDetail(item.id)">
-                                <div class="related-image">
-                                    <img :src="item.image" :alt="item.title">
-                                </div>
-                                <div class="related-content">
-                                    <h4>{{ item.title }}</h4>
-                                    <span class="related-date">{{ formatDate(item.date) }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 评论区域 -->
-                    <div class="comments-section">
-                        <h3 class="section-title">
-                            {{ lang.comments }} ({{ news.comments || 0 }})
-                        </h3>
-                        
-                        <div class="comment-form" v-if="isLoggedIn">
-                            <textarea v-model="commentText" :placeholder="lang.commentPlaceholder"></textarea>
-                            <button class="btn btn-primary" @click="submitComment">
-                                {{ lang.submitComment }}
-                            </button>
-                        </div>
-                        <div class="login-prompt" v-else>
-                            <p>{{ lang.loginToComment }}</p>
-                            <button class="btn btn-primary" @click="toggleLoginModal">
-                                {{ lang.login }}
-                            </button>
-                        </div>
-                        
-                        <div class="comments-list">
-                            <div class="comment-item" v-for="(comment, index) in comments" :key="index">
-                                <div class="comment-header">
-                                    <div class="comment-author">
-                                        <img :src="comment.avatar || 'images/default-avatar.jpg'" 
-                                             :alt="comment.author">
-                                        <span>{{ comment.author }}</span>
-                                    </div>
-                                    <span class="comment-date">{{ formatDate(comment.date) }}</span>
-                                </div>
-                                <div class="comment-content">
-                                    {{ comment.content }}
-                                </div>
-                                <div class="comment-actions">
-                                    <button class="btn-like" @click="toggleCommentLike(comment.id)" 
-                                            :class="{ liked: isCommentLiked(comment.id) }">
-                                        <i class="far fa-thumbs-up"></i> {{ comment.likes || 0 }}
-                                    </button>
-                                    <button class="btn-reply" @click="showReplyBox(index)" 
-                                            v-if="isLoggedIn">
-                                        {{ lang.reply }}
-                                    </button>
-                                </div>
-                                
-                                <!-- 回复框 -->
-                                <div class="reply-form" v-if="showReply === index">
-                                    <textarea v-model="replyText" :placeholder="lang.replyPlaceholder"></textarea>
-                                    <div class="reply-actions">
-                                        <button class="btn btn-secondary" @click="cancelReply">
-                                            {{ lang.cancel }}
-                                        </button>
-                                        <button class="btn btn-primary" @click="submitReply(comment.id)">
-                                            {{ lang.submit }}
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <!-- 回复列表 -->
-                                <div class="replies-list" v-if="comment.replies && comment.replies.length > 0">
-                                    <div class="reply-item" v-for="(reply, rIndex) in comment.replies" :key="rIndex">
-                                        <div class="reply-header">
-                                            <div class="reply-author">
-                                                <img :src="reply.avatar || 'images/default-avatar.jpg'" 
-                                                     :alt="reply.author">
-                                                <span>{{ reply.author }}</span>
-                                            </div>
-                                            <span class="reply-date">{{ formatDate(reply.date) }}</span>
-                                        </div>
-                                        <div class="reply-content">
-                                            {{ reply.content }}
-                                        </div>
-                                        <div class="reply-actions">
-                                            <button class="btn-like" @click="toggleReplyLike(reply.id)" 
-                                                    :class="{ liked: isReplyLiked(reply.id) }">
-                                                <i class="far fa-thumbs-up"></i> {{ reply.likes || 0 }}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- 新闻详情内容 -->
+        <main class="news-detail-container">
+            <button class="back-button" @click="goBack">
+                <i class="fas fa-arrow-left"></i> {{ lang.backToList }}
+            </button>
+            
+            <!-- 加载状态 -->
+            <div v-if="loading" class="loading-indicator">
+                <i class="fas fa-spinner fa-spin"></i> {{ lang.loading }}
+            </div>
+            
+            <!-- 错误信息 -->
+            <div v-if="error" class="error-message">
+                <i class="fas fa-exclamation-triangle"></i> {{ error }}
+            </div>
+            
+            <article class="news-article" v-if="!loading && !error">
+                <h1 class="news-title">{{ news.title }}</h1>
+                
+                <div class="news-meta">
+                    <span><i class="far fa-clock"></i> {{ formatDate(news.date) }}</span>
+                    <span><i class="far fa-newspaper"></i> {{ news.source }}</span>
+                    <span><i class="far fa-eye"></i> {{ news.views || 0 }} {{ lang.views }}</span>
+                    <span v-for="tag in news.tags" :key="tag" class="news-tag">
+                        {{ getTagName(tag) }}
+                    </span>
+                </div>
+                
+                <div class="news-image" v-if="news.image">
+                    <img :src="news.image" :alt="news.title" @error="handleImageError">
+                </div>
+                
+                <div class="news-content" v-html="news.content"></div>
+                
+                <div class="news-actions">
+                    <button class="btn-like" @click="toggleLike(news.id)" :class="{ liked: isLiked(news.id) }">
+                        <i class="far fa-heart"></i> {{ news.likes || 0 }} {{ lang.likes }}
+                    </button>
+                    <a :href="news.url" target="_blank" class="original-link" v-if="news.url">
+                        <i class="fas fa-external-link-alt"></i> {{ lang.viewOriginal }}
+                    </a>
+                </div>
+            </article>
+            
+            <!-- 相关新闻 -->
+            <section class="related-news" v-if="relatedNews.length > 0 && !loading">
+                <h2><i class="fas fa-link"></i> {{ lang.relatedNews }}</h2>
+                <div class="related-list">
+                    <div v-for="item in relatedNews" :key="item.id" class="related-item" @click="goToDetail(item.id)">
+                        <h3>{{ item.title }}</h3>
+                        <div class="related-meta">
+                            <span><i class="far fa-clock"></i> {{ formatDate(item.date) }}</span>
+                            <span><i class="far fa-newspaper"></i> {{ item.source }}</span>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
+            
+            <!-- 评论区域 -->
+            <section class="comments-section" v-if="isLoggedIn && !loading">
+                <h2><i class="far fa-comments"></i> {{ lang.comments }} ({{ news.comments || 0 }})</h2>
+                <div class="comment-form">
+                    <textarea v-model="commentText" :placeholder="lang.commentPlaceholder"></textarea>
+                    <button class="btn-comment" @click="submitComment">{{ lang.submitComment }}</button>
+                </div>
+                <div class="comment-list">
+                    <!-- 评论列表 -->
+                </div>
+            </section>
         </main>
-
-        <!-- 页脚 -->
-        <footer class="footer">
-            <div class="container">
-                <div class="footer-content">
-                    <div class="footer-section">
-                        <h4>{{ lang.aboutUs }}</h4>
-                        <p>{{ lang.aboutText }}</p>
-                    </div>
-                    <div class="footer-section">
-                        <h4>{{ lang.quickLinks }}</h4>
-                        <ul>
-                            <li><a href="index.html">{{ lang.home }}</a></li>
-                            <li><a href="index.html">{{ lang.news }}</a></li>
-                            <li><a href="#">{{ lang.contact }}</a></li>
-                            <li><a href="#">{{ lang.privacy }}</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-section">
-                        <h4>{{ lang.contactUs }}</h4>
-                        <p><i class="fas fa-envelope"></i> info@globalnews.com</p>
-                        <p><i class="fas fa-phone"></i> +1 234 567 890</p>
-                    </div>
-                </div>
-                <div class="footer-bottom">
-                    <p>&copy; {{ currentYear }} Global News. {{ lang.allRightsReserved }}</p>
-                    <div class="social-icons">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                    </div>
-                </div>
-            </div>
-        </footer>
     </div>
 
-    <script src="js/lang.js"></script>
-<script src="js/main.js"></script>
-<script src="js/login.js"></script>
-<script src="js/news-detail.js"></script>
+    <script src="./js/news-detail.js"></script>
 </body>
 </html>

@@ -1,4 +1,3 @@
-// config.js
 module.exports = {
   db: {
     host: 'localhost',
@@ -7,10 +6,11 @@ module.exports = {
     database: 'news_db',
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0,
-    timezone: 'local',
-    charset: 'utf8mb4',
-    // 移除了无效的connectionTimeout
-    connectTimeout: 10000 // 正确的参数名是connectTimeout
+    queueLimit: 0
+  },
+  server: {
+    port: 3000,
+    secretKey: 'your-secret-key-here',
+    saltRounds: 10
   }
 };

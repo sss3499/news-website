@@ -72,8 +72,8 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>{{ lang.username }}</label>
-                    <input type="text" v-model="registerForm.username" :placeholder="lang.usernamePlaceholder">
+                    <label for="username">{{ lang.username }}</label>
+                    <input id="username" type="text" v-model="registerForm.username" :placeholder="lang.usernamePlaceholder">
                     <div class="error-message" v-if="registerErrors.username">{{ registerErrors.username }}</div>
                 </div>
                 <div class="form-group">

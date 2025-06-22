@@ -1,0 +1,16 @@
+{
+  "db": {
+    "host": "localhost",
+    "user": "root",
+    "password": "123456",
+    "database": "news_db"
+  },
+  "newsSources": [
+    {
+      "name": "人民网",
+      "url": "http://www.people.com.cn/",
+      "baseUrl": "http://www.people.com.cn",
+      "selector": ".ej_content.clearfix"
+    }
+  ]
+}

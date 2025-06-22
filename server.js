@@ -4,36 +4,43 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
-const SECRET_KEY = 'your-secret-key';
-const SALT_ROUNDS = 10;
+const config = require('./config');
+const SECRET_KEY = config.server.secretKey;
+const SALT_ROUNDS = config.server.saltRounds;
 
-// 中间件
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// 数据库连接配置
-const dbConfig = {
+let pool = mysql.createPool({
   host: 'localhost',
   user: 'root',
   password: '123456',
-  database: 'news_db'
-};
+  database: 'news_db',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
 
-// 创建数据库连接池
-const pool = mysql.createPool(dbConfig);
+// 增强的 CORS 配置
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
+
+// 处理预检请求
+app.options('*', cors());
+
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'news-website')));
 
 // 初始化数据库
 async function initDatabase() {
   try {
     const connection = await pool.getConnection();
     
-    // 创建用户表
     await connection.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -43,44 +50,32 @@ async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    
-    // 创建新闻表
+
     await connection.query(`
       CREATE TABLE IF NOT EXISTS news (
         id INT AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT,
         content TEXT,
-        category VARCHAR(50),
+        category VARCHAR(50) DEFAULT 'general',
         tags VARCHAR(255),
         image VARCHAR(255),
         source VARCHAR(100),
-        date DATETIME,
+        date VARCHAR(50),
+        url VARCHAR(255),
         views INT DEFAULT 0,
         likes INT DEFAULT 0,
-        comments INT DEFAULT 0
+        comments INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_title (title)
       )
     `);
     
     connection.release();
-    console.log('Database initialized');
+    console.log('数据库初始化完成');
   } catch (err) {
-    console.error('Database initialization error:', err);
-  }
-}
-
-// 调用初始化
-initDatabase();
-
-// 从JSON文件加载新闻数据
-function loadNewsData(lang) {
-  try {
-    const filePath = path.join(__dirname, 'news-data', `news-${lang}.json`);
-    const data = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    console.error('Error loading news data:', err);
-    return [];
+    console.error('数据库初始化错误:', err);
+    throw err; // 抛出错误以便捕获
   }
 }
 
@@ -96,31 +91,41 @@ function authenticateToken(req, res, next) {
   });
 }
 
-// API路由
+// 测试API端点
+app.get('/api/test', (req, res) => {
+  res.json({ success: true, message: '服务运行正常' });
+});
+
 // 用户注册
 app.post('/api/register', async (req, res) => {
-  const { username, email, password, confirmPassword } = req.body;
+  const { username, email, password } = req.body;
   
-  if (password !== confirmPassword) {
-    return res.status(400).json({ message: 'Passwords do not match' });
+  if (!username || !email || !password) {
+    return res.status(400).json({ error: '请填写所有字段' });
   }
-  
+
   try {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
     const connection = await pool.getConnection();
+    
     const [result] = await connection.query(
       'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
       [username, email, hashedPassword]
     );
+    
     connection.release();
     
     const token = jwt.sign({ user: { id: result.insertId, username } }, SECRET_KEY);
-    res.json({ token, user: { username } });
+    res.json({ 
+      success: true,
+      token,
+      user: { username }
+    });
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
-      return res.status(400).json({ message: 'Username or email already exists' });
+      return res.status(400).json({ error: '用户名或邮箱已存在' });
     }
-    res.status(500).json({ message: 'Registration failed' });
+    res.status(500).json({ error: '注册失败', details: err.message });
   }
 });
 
@@ -128,6 +133,10 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   
+  if (!username || !password) {
+    return res.status(400).json({ error: '请输入用户名和密码' });
+  }
+
   try {
     const connection = await pool.getConnection();
     const [rows] = await connection.query(
@@ -137,20 +146,24 @@ app.post('/api/login', async (req, res) => {
     connection.release();
     
     if (rows.length === 0) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ error: '用户名或密码错误' });
     }
     
     const user = rows[0];
     const passwordMatch = await bcrypt.compare(password, user.password);
     
     if (!passwordMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ error: '用户名或密码错误' });
     }
     
     const token = jwt.sign({ user: { id: user.id, username: user.username } }, SECRET_KEY);
-    res.json({ token, user: { username: user.username } });
+    res.json({ 
+      success: true,
+      token,
+      user: { username: user.username }
+    });
   } catch (err) {
-    res.status(500).json({ message: 'Login failed' });
+    res.status(500).json({ error: '登录失败', details: err.message });
   }
 });
 
@@ -165,59 +178,114 @@ app.get('/api/user', authenticateToken, async (req, res) => {
     connection.release();
     
     if (rows.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ error: '用户不存在' });
     }
     
-    res.json({ user: rows[0] });
+    res.json({ 
+      success: true,
+      user: rows[0] 
+    });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch user' });
+    res.status(500).json({ error: '获取用户信息失败', details: err.message });
   }
 });
 
-// 获取新闻
 app.get('/api/news', async (req, res) => {
-  const { category, tag, search, page = 1, limit = 6 } = req.query;
-  const lang = req.query.lang || 'zh';
+  const { page = 1, limit = 10, category, search } = req.query;
+  const offset = (page - 1) * limit;
   
   try {
-    let newsData = loadNewsData(lang);
+    // 基础查询
+    let query = 'SELECT * FROM news';
+    let countQuery = 'SELECT COUNT(*) as count FROM news';
+    const params = [];
+    const whereClauses = [];
     
-    // 过滤逻辑
+    // 添加分类过滤
     if (category && category !== 'all') {
-      newsData = newsData.filter(news => news.category === category);
+     if (category === 'politics') {
+        whereClauses.push('(category = ? OR category = ?)');
+        params.push('politics', 'n1');
+      } else {
+        whereClauses.push('category = ?');
+        params.push(category);
+      }
     }
     
-    if (tag && tag !== 'all') {
-      newsData = newsData.filter(news => news.tags.includes(tag));
-    }
-    
+    // 添加搜索过滤
     if (search) {
-      const query = search.toLowerCase();
-      newsData = newsData.filter(news => 
-        news.title.toLowerCase().includes(query) || 
-        news.description.toLowerCase().includes(query)
-      );
+      whereClauses.push('(title LIKE ? OR description LIKE ? OR content LIKE ?)');
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+    // 标签过滤
+    if (tag && tag !== '全部') {
+      if (tag === '热门') {
+        whereClauses.push('views > ?');
+        params.push(1000); // 假设热门是浏览量大于1000
+      } else if (tag === '最新') {
+        whereClauses.push('date >= ?');
+        params.push(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+      } else {
+        whereClauses.push('tags LIKE ?');
+        params.push(`%${tag}%`);
+      }
+    }
+    // 构建完整查询
+    if (whereClauses.length > 0) {
+      const where = ' WHERE ' + whereClauses.join(' AND ');
+      query += where;
+      countQuery += where;
     }
     
-    // 分页逻辑
-    const total = newsData.length;
-    const totalPages = Math.ceil(total / limit);
-    const startIndex = (page - 1) * limit;
-    const endIndex = Math.min(startIndex + limit, total);
-    const paginatedData = newsData.slice(startIndex, endIndex);
+    // 添加排序和分页
+    query += ' ORDER BY date DESC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), parseInt(offset));
     
-    res.json({
-      news: paginatedData,
-      total,
-      pages: totalPages,
+    // 执行查询
+    const [total] = await pool.query(countQuery, params.slice(0, -2));
+    const [rows] = await pool.query(query, params);
+    
+    res.json({ 
+      success: true,
+      news: rows, 
+      total: total[0].count, 
+      pages: Math.ceil(total[0].count / limit),
       currentPage: parseInt(page)
     });
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch news' });
+  } catch (error) {
+    console.error('获取新闻失败:', error);
+    res.status(500).json({ 
+      success: false,
+      error: '获取新闻失败', 
+      details: error.message 
+    });
   }
+});
+
+// 处理404
+app.use((req, res) => {
+  res.status(404).send('Not Found');
+});
+
+// 错误处理
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
 });
 
 // 启动服务器
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+
+async function startServer() {
+  try {
+    await initDatabase();
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`服务器运行在 http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('服务器启动失败:', err);
+    process.exit(1);
+  }
+}
+
+startServer();
