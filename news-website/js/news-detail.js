@@ -24,7 +24,7 @@ const app = createApp({
             likedNews: [],
             loading: false,
             error: null,
-            apiBaseUrl: 'http://localhost:3000/api', // 修改为您的API基础URL
+            apiBaseUrl: '/api', // 修改为您的API基础URL
             lang: {
                 zh: {
                     logoText: '全球新闻',

@@ -191,7 +191,7 @@ app.get('/api/user', authenticateToken, async (req, res) => {
 });
 
 app.get('/api/news', async (req, res) => {
-  const { page = 1, limit = 10, category, search } = req.query;
+  const { page = 1, limit = 10, category, search, tag } = req.query;
   const offset = (page - 1) * limit;
   
   try {
@@ -218,7 +218,7 @@ app.get('/api/news', async (req, res) => {
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
     // 标签过滤
-    if (tag && tag !== '全部') {
+    if (tag && tag !== 'all') {
       if (tag === '热门') {
         whereClauses.push('views > ?');
         params.push(1000); // 假设热门是浏览量大于1000

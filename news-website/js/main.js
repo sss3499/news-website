@@ -54,7 +54,7 @@ const app = createApp({
       loading: false,
       error: null,
       showDropdown: false,
-      apiBaseUrl: 'http://localhost:3000'
+      apiBaseUrl: ''
     };
   },
   computed: {

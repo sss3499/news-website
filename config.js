@@ -1,6 +1,6 @@
 module.exports = {
   db: {
-    host: 'localhost',
+    host: '192.168.100.36',
     user: 'root',
     password: '123456',
     database: 'news_db',
