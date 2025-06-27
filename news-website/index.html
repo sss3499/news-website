@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="light" data-font-size="medium" data-layout="list">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +9,9 @@
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- 替换原来的Vue引用 -->
-<!-- <script src="./js/vue.global.min.js"></script> -->
+    <!-- <script src="./js/vue.global.min.js"></script> -->
 </head>
+
 <body>
     <div id="app">
         <!-- 顶部导航栏 -->
@@ -20,40 +22,42 @@
                 </div>
                 <nav class="main-nav">
                     <ul>
-                        <li v-for="(item, index) in navItems" :key="index" 
-                            :class="{ active: activeNav === index }"
+                        <li v-for="(item, index) in navItems" :key="index" :class="{ active: activeNav === index }"
                             @click="changeCategory(index)">
                             {{ item.text }}
                         </li>
                     </ul>
                 </nav>
                 <div class="header-actions">
-                <button class="lang-switch" @click="toggleLanguage">
-                  {{ currentLanguage === 'zh' ? 'EN' : '中文' }}
+                    <button class="lang-switch" @click="toggleLanguage">
+                        {{ currentLanguage === 'zh' ? 'EN' : '中文' }}
+                    </button>
+                    <button class="settings-btn" @click="toggleSettings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <div class="user-dropdown" v-if="isLoggedIn && user">
+                        <button class="user-btn">
+                            <i class="fas fa-user-circle"></i> {{ user?.username || '用户' }}
+                        </button>
+                    </div>
+                     <button class="user-btn" @click.stop="showDropdown = true">
+                                               <i class="fas fa-caret-down"   ></i>
+
+                        </button>
+                   
+                    <div class="dropdown-menu" v-show="showDropdown" @click.stop>
+                        <a href="#" @click.prevent="logout">
+                            <i class="fas fa-sign-out-alt"></i> {{ lang.logout }}
+                        </a>
+                        <a href="profile.html" @click.prevent="goToProfile">
+                            <i class="fas fa-user"></i> {{ lang.profile }}
+                        </a>
+                    </div>
+                </div>
+                <button v-else class="login-btn" @click="toggleLoginModal">
+                    <i class="fas fa-sign-in-alt"></i> {{ lang.login }}
                 </button>
-                <button class="settings-btn" @click="toggleSettings">
-                <i class="fas fa-cog"></i>
-                </button>
-                <div class="user-dropdown" v-if="isLoggedIn && user">
-  <button class="user-btn">
-    <i class="fas fa-user-circle"></i> {{ user?.username || '用户' }}
-  </button>
-</div>
-                <i class="fas fa-caret-down"></i>
-                </button>
-                <div class="dropdown-menu" v-show="showDropdown" @click.stop>
-                <a href="#" @click.prevent="logout">
-                <i class="fas fa-sign-out-alt"></i> {{ lang.logout }}
-                </a>
-              <a href="profile.html" @click.prevent="goToProfile">
-        <i class="fas fa-user"></i> {{ lang.profile }}
-      </a>
-    </div>
-  </div>
-  <button v-else class="login-btn" @click="toggleLoginModal">
-    <i class="fas fa-sign-in-alt"></i> {{ lang.login }}
-  </button>
-</div>
+            </div>
         </header>
 
         <!-- 登录模态框 -->
@@ -109,12 +113,14 @@
                     <div class="form-group">
                         <label>{{ lang.password }}</label>
                         <input type="password" v-model="registerForm.password" :placeholder="lang.passwordPlaceholder">
-                    <div class="error-message" v-if="registerErrors.password">{{ registerErrors.password }}</div>
+                        <div class="error-message" v-if="registerErrors.password">{{ registerErrors.password }}</div>
                     </div>
                     <div class="form-group">
                         <label>{{ lang.confirmPassword }}</label>
-                        <input type="password" v-model="registerForm.confirmPassword" :placeholder="lang.confirmPasswordPlaceholder">
-                        <div class="error-message" v-if="registerErrors.confirmPassword">{{ registerErrors.confirmPassword }}</div>
+                        <input type="password" v-model="registerForm.confirmPassword"
+                            :placeholder="lang.confirmPasswordPlaceholder">
+                        <div class="error-message" v-if="registerErrors.confirmPassword">{{
+                            registerErrors.confirmPassword }}</div>
                     </div>
                     <div class="form-actions">
                         <button class="btn btn-primary" @click="handleRegister">
@@ -179,7 +185,7 @@
                 <div v-if="loading" class="loading-indicator">
                     <i class="fas fa-spinner fa-spin"></i> {{ lang.loading }}
                 </div>
-                
+
                 <!-- 错误信息 -->
                 <div v-if="error" class="error-message">
                     <i class="fas fa-exclamation-triangle"></i> {{ error }}
@@ -187,8 +193,8 @@
 
                 <!-- 搜索框 -->
                 <div class="search-box">
-                    <input type="text" v-model="searchQuery" :placeholder="lang.searchPlaceholder" 
-                           @keyup.enter="searchNews">
+                    <input type="text" v-model="searchQuery" :placeholder="lang.searchPlaceholder"
+                        @keyup.enter="searchNews">
                     <button @click="searchNews">
                         <i class="fas fa-search"></i>
                     </button>
@@ -196,9 +202,8 @@
 
                 <!-- 新闻分类标签 -->
                 <div class="news-tags">
-                    <span v-for="(tag, index) in tags" :key="index" 
-                          :class="{ active: activeTag === index }"
-                          @click="filterByTag(index)">
+                    <span v-for="(tag, index) in tags" :key="index" :class="{ active: activeTag === index }"
+                        @click="filterByTag(index)">
                         {{ tag }}
                     </span>
                 </div>
@@ -206,16 +211,15 @@
                 <!-- 新闻列表 -->
                 <div class="news-container" :class="selectedLayout">
                     <div class="news-item" v-for="(news, index) in paginatedNews" :key="news.id || index">
-  <div class="news-image">
-  <img :src="news.image || 'images/default-news.jpg'" 
-       :alt="news.title" 
-       @click="goToDetail(news.id)" 
-       style="cursor: pointer;"
-       onerror="this.src='images/default-news.jpg'">
-  <span class="news-category">{{ getCategoryName(news.category) }}</span>
-</div>
+                        <div class="news-image">
+                            <img :src="news.image || 'images/default-news.jpg'" :alt="news.title"
+                                @click="goToDetail(news.id)" style="cursor: pointer;"
+                                onerror="this.src='images/default-news.jpg'">
+                            <span class="news-category">{{ getCategoryName(news.category) }}</span>
+                        </div>
                         <div class="news-content">
-                            <h3 class="news-title" @click="goToDetail(news.id)" style="cursor: pointer;">{{ news.title }}</h3>
+                            <h3 class="news-title" @click="goToDetail(news.id)" style="cursor: pointer;">{{ news.title
+                                }}</h3>
                             <p class="news-desc">{{ news.description }}</p>
                             <div class="news-meta">
                                 <span class="news-date">
@@ -232,8 +236,8 @@
                                 </span>
                             </div>
                             <div class="news-actions">
-                                <button class="btn-like" @click="toggleLike(news.id)" 
-                                        :class="{ liked: isLiked(news.id) }">
+                                <button class="btn-like" @click="toggleLike(news.id)"
+                                    :class="{ liked: isLiked(news.id) }">
                                     <i class="far fa-heart"></i> {{ news.likes || 0 }}
                                 </button>
                                 <a :href="'news-detail.html?id=' + news.id" class="read-more">
@@ -244,25 +248,23 @@
                     </div>
                 </div>
 
-               <!-- 分页控制 -->
-<div class="pagination" v-if="paginationEnabled && totalPages > 1">
-  <button @click="prevPage" :disabled="currentPage === 1">
-    <i class="fas fa-chevron-left"></i> {{ lang.previous }}
-  </button>
-  
-  <template v-for="page in visiblePages" :key="page">
-    <span v-if="page === '...'" class="ellipsis">...</span>
-    <button v-else 
-            :class="{ active: currentPage === page }"
-            @click="goToPage(page)">
-      {{ page }}
-    </button>
-  </template>
-  
-  <button @click="nextPage" :disabled="currentPage === totalPages">
-    {{ lang.next }} <i class="fas fa-chevron-right"></i>
-  </button>
-</div>
+                <!-- 分页控制 -->
+                <div class="pagination" v-if="paginationEnabled && totalPages > 1">
+                    <button @click="prevPage" :disabled="currentPage === 1">
+                        <i class="fas fa-chevron-left"></i> {{ lang.previous }}
+                    </button>
+
+                    <template v-for="page in visiblePages" :key="page">
+                        <span v-if="page === '...'" class="ellipsis">...</span>
+                        <button v-else :class="{ active: currentPage === page }" @click="goToPage(page)">
+                            {{ page }}
+                        </button>
+                    </template>
+
+                    <button @click="nextPage" :disabled="currentPage === totalPages">
+                        {{ lang.next }} <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
             </div>
         </main>
 
@@ -306,5 +308,6 @@
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
     <script src="js/main.js"></script>
     <script src="js/lang.js"></script>
-    </body>
+</body>
+
 </html>
