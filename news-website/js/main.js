@@ -370,15 +370,15 @@ paginatedNews() {
       };
 
       if (!this.registerForm.username) {
-        this.registerErrors.username = this.lang.registerRequired;
+        this.registerErrors.username = this.lang.usernamePlaceholder;
         return;
       }
       if (!this.registerForm.email) {
-        this.registerErrors.email = this.lang.registerRequired;
+        this.registerErrors.email = this.lang.emailPlaceholder;
         return;
       }
       if (!this.registerForm.password) {
-        this.registerErrors.password = this.lang.registerRequired;
+        this.registerErrors.password = this.lang.passwordPlaceholder;
         return;
       }
       if (this.registerForm.password !== this.registerForm.confirmPassword) {
