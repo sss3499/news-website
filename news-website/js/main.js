@@ -28,7 +28,7 @@ const app = createApp({
       newsData: [],
       filteredNews: [],
       currentPage: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 5,
       totalPages: 1,
       currentYear: new Date().getFullYear(),
       refreshTimer: null,
@@ -171,7 +171,8 @@ const app = createApp({
     paginatedNews() {
       const start = (this.currentPage - 1) * this.itemsPerPage;
       const end = start + this.itemsPerPage;
-      return this.filteredNews.slice(start, end);
+      // return this.filteredNews.slice(start, end);
+      return this.filteredNews
     },
     shouldShowPagination() {
       return this.totalNewsCount > this.itemsPerPage;
